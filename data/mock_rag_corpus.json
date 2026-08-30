@@ -1,0 +1,62 @@
+[
+  {
+    "id": "rag001",
+    "content": "错题：I have went to the park yesterday. 错误原因：一般过去时与现在完成时混淆。yesterday 是明确的过去时间标志，应用一般过去时 I went to the park yesterday. 另外 go 的过去式是 went，过去分词是 gone，have went 本身也是错误形式。",
+    "source": "错题本p12"
+  },
+  {
+    "id": "rag002",
+    "content": "错题：He has finished his homework last night. 错误原因：现在完成时不能与 last night 这类明确的过去时间连用，应改为一般过去时 He finished his homework last night. 判断口诀：句中有 yesterday/last week/in 2020 等过去时间点，用一般过去时。",
+    "source": "错题本p13"
+  },
+  {
+    "id": "rag003",
+    "content": "教材讲解：现在完成时（have/has + 过去分词）强调过去动作对现在的影响或持续到现在的状态，常与 already、just、ever、never、since、for 连用；一般过去时只陈述过去发生并结束的动作。对比记忆：I lost my key.（丢了，过去的事）vs I have lost my key.（丢了，现在还没找到）。",
+    "source": "教材unit3"
+  },
+  {
+    "id": "rag004",
+    "content": "错题：She don't likes apples. 错误原因：一般现在时第三人称单数双重错误。否定句应为 She doesn't like apples. 规则：主语是第三人称单数时助动词用 does/doesn't，且助动词后面的实义动词要还原为原形。",
+    "source": "错题本p15"
+  },
+  {
+    "id": "rag005",
+    "content": "错题：Look! The children play football. 错误原因：Look!/Listen!/now 等标志词提示动作正在进行，应用现在进行时 The children are playing football. 结构：be(am/is/are) + 动词-ing。",
+    "source": "错题本p16"
+  },
+  {
+    "id": "rag006",
+    "content": "口语练习：自我介绍常用句型——My name is ... / I'm in Grade ... / I'm interested in ... / My favorite sport is ...。注意事项：语速放慢、语调上扬表疑问、句间自然停顿；介绍爱好时用 like doing / enjoy doing / be good at doing 三种表达替换避免单调。",
+    "source": "口语教材unit1"
+  },
+  {
+    "id": "rag007",
+    "content": "口语练习：谈论周末计划常用句型——What are you going to do this weekend? / I'm going to ... / How about you? 练习要点：be going to 表计划好的将来动作，后接动词原形；与同伴对话时要用 How about you / What about you 把话题抛回去，保持双向交流。",
+    "source": "口语教材unit2"
+  },
+  {
+    "id": "rag008",
+    "content": "数学错题：计算 (-3) + 5 与 (-3) - 5。正确答案：(-3) + 5 = 2，(-3) - 5 = -8。易错点：异号两数相加，取绝对值较大数的符号，再用较大的绝对值减去较小的绝对值；减去一个数等于加上它的相反数。",
+    "source": "错题本p20"
+  },
+  {
+    "id": "rag009",
+    "content": "数学讲解：有理数乘除法则——同号得正，异号得负，并把绝对值相乘（除）；除以一个不为 0 的数等于乘以它的倒数。多个非零有理数相乘时，负因数的个数为奇数则积为负，为偶数则积为正。",
+    "source": "教材数学chapter2"
+  },
+  {
+    "id": "rag010",
+    "content": "数学错题：比较 -2.5 与 -3 的大小。正确答案：-2.5 > -3。易错点：两个负数比较大小，绝对值大的反而小。可借助数轴理解：数轴上右边的数总比左边的大。",
+    "source": "错题本p22"
+  },
+  {
+    "id": "rag011",
+    "content": "错题：I didn't went to school yesterday. 错误原因：一般过去时否定句中，助动词 didn't 已经体现过去时，实义动词必须还原为原形，应为 I didn't go to school yesterday. 同类错误还有 didn't had / doesn't likes。",
+    "source": "错题本p14"
+  },
+  {
+    "id": "rag012",
+    "content": "教材讲解：英语时态时间标志词速查——一般过去时：yesterday, last night/week, ... ago, in 2020；现在完成时：already, just, yet, ever, never, since, for；现在进行时：now, look, listen, at the moment。做题第一步先圈出时间标志词再定时态。",
+    "source": "教材unit3"
+  }
+]

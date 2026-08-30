@@ -1,0 +1,21 @@
+{
+  "_说明": "复制本文件为 config.json 并填入真实凭据即可启用真实API；留空或删除则自动使用模拟数据/MockLLM。config.json 已被 .gitignore 忽略，请勿提交凭据。",
+  "llm": {
+    "_说明": "OpenAI 兼容的大模型接口（base_url 为 /v1 结尾的根地址，api_key 为 Bearer 令牌，model 为模型名）。三项齐全时三个 Agent 使用真实 LLM，任一留空则自动回退 MockLLM；API 调用失败时也会单次回退 MockLLM，保证演示不中断",
+    "base_url": "",
+    "api_key": "",
+    "model": ""
+  },
+  "feishu": {
+    "_说明": "飞书开放平台自建应用的 app_id / app_secret，用于 check_calendar 查真实日历",
+    "app_id": "",
+    "app_secret": ""
+  },
+  "email": {
+    "_说明": "SMTP 发信配置（以交大邮箱为例，密码填授权码而非登录密码），用于 send_email 真实发信",
+    "smtp_server": "smtp.sjtu.edu.cn",
+    "smtp_port": 465,
+    "address": "",
+    "auth_password": ""
+  }
+}
