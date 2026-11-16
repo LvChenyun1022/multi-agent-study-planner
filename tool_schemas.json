@@ -1,0 +1,79 @@
+[
+  {
+    "name": "rag_search",
+    "description": "在错题本/教材语料库中检索与查询最相关的内容，返回 top_k 条语料（每条含 id/content/source），用于诊断学生的知识薄弱点。",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "检索关键词或问题描述，例如'一般过去时 现在完成时 混淆'"
+        },
+        "top_k": {
+          "type": "integer",
+          "description": "返回的最相关语料条数",
+          "default": 3
+        }
+      },
+      "required": ["query"]
+    },
+    "sensitive": false
+  },
+  {
+    "name": "check_calendar",
+    "description": "查询某一天的日程安排，返回该日的安排列表（每项含时间段与事项），用于规划学习计划的可用时间。",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "string",
+          "description": "日期，格式 YYYY-MM-DD，例如 2026-08-17"
+        }
+      },
+      "required": ["date"]
+    },
+    "sensitive": false
+  },
+  {
+    "name": "check_weather",
+    "description": "查询某城市某一天的天气情况，返回天气、温度和是否适合户外运动，用于调整学习计划中的运动安排。",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "city": {
+          "type": "string",
+          "description": "城市名，例如'上海'"
+        },
+        "date": {
+          "type": "string",
+          "description": "日期，格式 YYYY-MM-DD，例如 2026-08-17"
+        }
+      },
+      "required": ["city", "date"]
+    },
+    "sensitive": false
+  },
+  {
+    "name": "send_email",
+    "description": "给学生/家长发送邮件（例如学习计划总结）。属于敏感操作，必须经过 Harness 审批后才能执行。",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "to": {
+          "type": "string",
+          "description": "收件人邮箱地址"
+        },
+        "subject": {
+          "type": "string",
+          "description": "邮件主题"
+        },
+        "body": {
+          "type": "string",
+          "description": "邮件正文"
+        }
+      },
+      "required": ["to", "subject", "body"]
+    },
+    "sensitive": true
+  }
+]

@@ -1,0 +1,10 @@
+{
+  "_comment": "模拟天气：上海 2026-08-17(周一) 至 2026-08-23(周日)。周四中雨不适合户外运动，供规划Agent把当天的运动调整为室内学习。suitable_for_outdoor=true 表示适合户外运动。",
+  "2026-08-17": {"city": "上海", "weather": "晴", "temperature": "26~33°C", "suitable_for_outdoor": true},
+  "2026-08-18": {"city": "上海", "weather": "多云", "temperature": "27~34°C", "suitable_for_outdoor": true},
+  "2026-08-19": {"city": "上海", "weather": "晴", "temperature": "27~35°C", "suitable_for_outdoor": true},
+  "2026-08-20": {"city": "上海", "weather": "中雨", "temperature": "25~29°C", "suitable_for_outdoor": false},
+  "2026-08-21": {"city": "上海", "weather": "阴", "temperature": "26~31°C", "suitable_for_outdoor": true},
+  "2026-08-22": {"city": "上海", "weather": "晴", "temperature": "27~34°C", "suitable_for_outdoor": true},
+  "2026-08-23": {"city": "上海", "weather": "多云", "temperature": "26~33°C", "suitable_for_outdoor": true}
+}
