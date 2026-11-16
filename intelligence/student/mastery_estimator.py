@@ -25,20 +25,17 @@ from schemas.learning_event import LearningEvent, SCORED_EVENT_TYPES
 DEFAULT_HALF_LIFE_DAYS = 14.0
 
 # 证据可靠度：正式考试 > 模拟卷 > 平时测验 > 作业 > 学生自评
-RELIABILITY_BY_SOURCE_TYPE = {
-    "exam": 1.2,
-    "mock_exam": 1.1,
-    "quiz": 1.0,
-    "assignment": 0.8,
-    "self_assessment": 0.3,
-}
-RELIABILITY_BY_EVENT_TYPE = {
-    "exam_completed": 1.2,
-    "quiz_submitted": 1.0,
-    "assignment_submitted": 0.8,
-    "self_assessment": 0.3,
-}
-DEFAULT_RELIABILITY = 0.5
+# 证据可靠性 R 与独立性 V 的数值统一由
+# intelligence/assessment/evidence_policy.py 维护（单一真源）；
+# 此处保留同名别名，兼容既有调用与测试。
+from intelligence.assessment.evidence_policy import (
+    DEFAULT_RELIABILITY,
+    RELIABILITY_BY_EVENT_TYPE,
+    RELIABILITY_BY_SOURCE_TYPE,
+    independence_of,
+    measurement_kind,
+    reliability_of,
+)
 
 # 置信等级阈值（基于有效样本量）
 CONFIDENCE_MEDIUM_THRESHOLD = 1.5
@@ -67,12 +64,6 @@ def _naive(dt: datetime) -> datetime:
     return dt.replace(tzinfo=None)
 
 
-def reliability_of(event: LearningEvent) -> float:
-    if event.source_type in RELIABILITY_BY_SOURCE_TYPE:
-        return RELIABILITY_BY_SOURCE_TYPE[event.source_type]
-    return RELIABILITY_BY_EVENT_TYPE.get(event.event_type, DEFAULT_RELIABILITY)
-
-
 def recency_weight(event: LearningEvent, now: datetime,
                    half_life_days: float = DEFAULT_HALF_LIFE_DAYS) -> float:
     days = max(
@@ -97,8 +88,13 @@ def difficulty_weight(event: LearningEvent) -> float:
 
 def evidence_weight(event: LearningEvent, now: datetime,
                     half_life_days: float = DEFAULT_HALF_LIFE_DAYS) -> float:
+    """w_j = R_j · V_j · T_j · D_j（可靠性·独立性·时间衰减·难度）。
+
+    V_j（独立性）来自 AI 辅助申报；R/V 数值由 evidence_policy 统一维护。
+    """
     return (
         reliability_of(event)
+        * independence_of(event)
         * recency_weight(event, now, half_life_days)
         * difficulty_weight(event)
     )

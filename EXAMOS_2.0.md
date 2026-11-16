@@ -37,21 +37,54 @@
    `is_prior`，不确定性经 `n_diag` 交给排程引擎 U 因子表达。
 5. **零新增依赖**：全部标准库实现，CI 与部署环境无新增安装项。
 
-## 掌握度估计（第一版）
+## 掌握度估计（证据校准版）
 
 ```
 M̂ = Σ w_j y_j / Σ w_j
-w_j = w_reliability · w_recency · w_difficulty
+w_j = R_j · V_j · T_j · D_j
 ```
 
-- reliability：exam 1.2 / mock_exam 1.1 / quiz 1.0 / assignment 0.8 / 自评 0.3
-- recency：指数衰减，半衰期 14 天
-- difficulty：0.5 + difficulty（无标注取 1.0）
-- 输出：mastery、Kish 有效样本量、置信等级（none/low/medium/high）、证据数
+- R 可靠性：监考考试 1.2 / 延迟与迁移测试 1.1 / 独立速测 1.05 /
+  平时测验 1.0 / 口头验证 0.9 / 作业 0.8 / 自评 0.3
+- V 独立性（Phase 1.5 新增）：学生申报 AI 辅助程度的折扣系数，
+  none 1.0 / unknown 0.9 / declared_partial 0.5 / declared_heavy 0.15
+- T 时间衰减：指数衰减，半衰期 14 天
+- D 难度：0.5 + difficulty（无标注取 1.0）
+- 输出：mastery、Kish 有效样本量、置信等级、证据数、五态 learning_state
+
+**校准纪律**：R/V 全部数值集中在
+`intelligence/assessment/evidence_policy.py`，标注为默认参数，
+未经真实数据校准不得宣称精度。
+
+## Phase 1.5：Competency Verification（能力验证）
+
+- `evidence_policy.py`：证据分级与权重的单一真源；区分
+  即时/独立/延迟/迁移四层测量方式；
+- `competency_triggers.py`：不确定才测的确定性触发规则——
+  独立证据不足（τ_eff_n）｜作业与独立能力背离（τ_D，
+  AI 辅助作业污染画像的主要信号）｜独立证据过期（τ_T）；
+- 新事件类型：`diagnostic_quiz_submitted`、`oral_verification_completed`；
+  `payload.assistance` 申报字段。
+
+明确不做（留 Phase 2/3）：AI 文本检测器、题目生成、口头交互界面。
+AI 检测只能作为触发信号，不能直接降低掌握度。
+
+## Phase 1.6：Longitudinal Learning（长期保持）
+
+- `retention.py`：
+  - 五态知识状态机 unlearned → acquired → independently_retrievable
+    → retained → transferable，状态可降级（最新延迟证据 <0.4 打回
+    acquired，防止辅导后短期冲高被误判为长期掌握）；
+  - 遗忘速率 λ 个体化拟合（≥2 个延迟测量点，ln 线性回归），
+    无延迟证据时如实输出 unknown，绝不用即时成绩填充；
+  - 复习优先级 I·(1−M)·P_forget·C（知识点级信号，
+    不与 D/M/W/U 重复计分）；λ 未知时按证据稀缺度兜底；
+- 画像输出新增 `learning_state` 字段。
 
 ## 测试结果
 
-`python -m unittest discover` → 54/54 通过（22 项 1.0 遗留 + 32 项新增）。
+`python -m unittest discover` → 79/79 通过
+（22 项 1.0 遗留 + Phase 1 新增 32 项 + Phase 1.5/1.6 新增 25 项）。
 
 ## 明确的边界（未实现）
 

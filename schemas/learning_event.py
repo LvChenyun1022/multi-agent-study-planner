@@ -25,6 +25,12 @@ EVENT_TYPES = frozenset({
     "tutor_interaction",
     "task_overdue",
     "self_assessment",
+    # Phase 1.5：能力验证类事件（无辅助独立测评）
+    "diagnostic_quiz_submitted",
+    "oral_verification_completed",
+    # Phase 1.6：纵向保持类事件
+    "delayed_test_completed",
+    "transfer_test_completed",
 })
 
 # 带有分数证据、可用于掌握度估计的事件类型
@@ -33,6 +39,19 @@ SCORED_EVENT_TYPES = frozenset({
     "quiz_submitted",
     "exam_completed",
     "self_assessment",
+    "diagnostic_quiz_submitted",
+    "oral_verification_completed",
+    "delayed_test_completed",
+    "transfer_test_completed",
+})
+
+# 学生主动申报的 AI 辅助程度（payload.assistance）。
+# 使用 AI 不是负面行为；该字段只用于校准证据的独立性权重 V。
+ASSISTANCE_LEVELS = frozenset({
+    "none",              # 明确独立完成
+    "declared_partial",  # 申报部分使用 AI
+    "declared_heavy",    # 申报大量依赖 AI
+    "unknown",           # 未申报（默认）
 })
 
 
@@ -117,7 +136,19 @@ class LearningEvent:
                 raise EventValidationError(
                     f"score（{score}）必须位于 [0, total_score（{total}）]"
                 )
+        if "assistance" in self.payload:
+            assistance = self.payload["assistance"]
+            if assistance not in ASSISTANCE_LEVELS:
+                raise EventValidationError(
+                    "payload.assistance 必须是 "
+                    f"{sorted(ASSISTANCE_LEVELS)} 之一，收到：{assistance!r}"
+                )
         return self
+
+    @property
+    def assistance(self) -> str:
+        """学生申报的 AI 辅助程度；未申报按 unknown 处理。"""
+        return self.payload.get("assistance", "unknown")
 
     @property
     def performance(self) -> float | None:

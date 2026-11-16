@@ -34,6 +34,7 @@ from datetime import datetime, timezone
 
 from schemas.course import CourseSpec
 from .mastery_estimator import DEFAULT_HALF_LIFE_DAYS, estimate_mastery
+from .retention import classify_knowledge_state
 
 PRIOR_MASTERY = 0.5
 
@@ -56,6 +57,7 @@ def build_student_state(student_id: str, course_specs: list,
         knowledge_state: dict = {}
         for kp in spec.knowledge_weights:
             estimate = estimate_mastery(events, kp, now, half_life_days)
+            learning_state, _ = classify_knowledge_state(events, kp)
             if estimate.mastery is None:
                 knowledge_state[kp] = {
                     "mastery": PRIOR_MASTERY,
@@ -64,6 +66,7 @@ def build_student_state(student_id: str, course_specs: list,
                     "n_evidence": 0,
                     "last_updated": None,
                     "is_prior": True,
+                    "learning_state": learning_state,
                 }
             else:
                 knowledge_state[kp] = {
@@ -76,6 +79,7 @@ def build_student_state(student_id: str, course_specs: list,
                         if estimate.last_updated else None
                     ),
                     "is_prior": False,
+                    "learning_state": learning_state,
                 }
         courses_state[spec.course_id] = {"knowledge": knowledge_state}
 
