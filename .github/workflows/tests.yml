@@ -15,6 +15,6 @@ jobs:
         with:
           python-version: "3.11"
       - name: Compile Python modules
-        run: python -m compileall -q agents scheduler.py
+        run: python -m compileall -q agents schemas storage services intelligence scheduler.py
       - name: Run unit and integration tests
         run: python -m unittest discover -v
