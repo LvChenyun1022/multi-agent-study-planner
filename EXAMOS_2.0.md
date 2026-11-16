@@ -81,15 +81,51 @@ AI 检测只能作为触发信号，不能直接降低掌握度。
     不与 D/M/W/U 重复计分）；λ 未知时按证据稀缺度兜底；
 - 画像输出新增 `learning_state` 字段。
 
+## Phase 1.7：Community Intelligence（社区证据内核）
+
+定位决策（采纳评审建议）：**B 的产品体验 + A 的智能分析核心**——
+学生看到的是自由的校园社区，后台只分析经授权的学习互动。
+
+- `schemas/community.py`：CommunityPost / CommunityReply /
+  DiscussionThread（知识讨论链：提问→讨论→修正→延迟验证）/
+  CommunityEvidence（六维能力证据）；
+- `intelligence/community/evidence_mapper.py`：社区证据 →
+  LearningEvent 的确定性转换，三条不可绕过的门禁——
+  1. 浏览/点赞/收藏**永不进入画像**（只可用于内容推荐）；
+  2. consent=False 的证据直接丢弃（未授权不分析）；
+  3. pending/disputed 的证据复核前丢弃（学生异议权优先）；
+- 社区证据经 `community_contribution` 事件进入统一证据库
+  （R=0.6，弱于正式测评），knowledge_transfer 类证据进入
+  transfer 测量层供纵向引擎使用；
+- 本层不做内容理解：知识点识别与回答质量评分由上游
+  （LLM 分析 Agent 或人工）产出，本层只校验结构与门禁。
+
+明确不做（留 C1–C3 阶段）：论坛前端、信息流、LLM 分析 Agent、
+知识挑战推荐、Discourse 部署。
+
+## 六引擎现状
+
+| 引擎 | 状态 |
+| --- | --- |
+| Student Modeling | ✅ 已实现（证据校准版） |
+| Competency Verification | ✅ 核心已实现（触发器 + V 因子） |
+| Longitudinal Learning | ✅ 核心已实现（状态机 + 遗忘拟合） |
+| Community Intelligence | ✅ 数据内核已实现（证据门禁与转换） |
+| Adaptive Decision | ✅ 1.0 排程引擎沿用 |
+| Course Intelligence | ❌ Phase 2，最大剩余项 |
+
 ## 测试结果
 
-`python -m unittest discover` → 79/79 通过
-（22 项 1.0 遗留 + Phase 1 新增 32 项 + Phase 1.5/1.6 新增 25 项）。
+`python -m unittest discover` → 94/94 通过
+（22 项 1.0 遗留 + Phase 1 新增 32 项 + Phase 1.5/1.6 新增 25 项
++ Phase 1.7 新增 15 项）。
 
 ## 明确的边界（未实现）
 
 - 未实现从日历/诊断 Agent 自动构建 exam_plan（沿自 1.0 集成报告的边界）；
 - 未实现 Course Intelligence（文档解析/OCR/知识图谱，属 Phase 2）；
+- 未实现社区前端与 LLM 社区分析 Agent（C1–C3 阶段）；
 - 未实现 Level 1（学期级）与 Level 3（即时）决策；
 - 掌握度模型为证据加权统计模型，未引入 BKT；
-- demo_slice.py 演示数据全部为【模拟】数据。
+- demo_slice.py 演示数据全部为【模拟】数据；
+- evidence_policy.py 中全部权重为默认参数，未经真实数据校准。

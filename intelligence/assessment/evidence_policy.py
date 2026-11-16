@@ -28,6 +28,7 @@ RELIABILITY_BY_EVENT_TYPE = {
     "quiz_submitted": 1.0,              # 平时测验
     "oral_verification_completed": 0.9, # 口头/文字过程验证
     "assignment_submitted": 0.8,        # 作业（独立性未知）
+    "community_contribution": 0.6,      # 社区证据：经授权与复核但仍属弱测量
     "self_assessment": 0.3,             # 学生自评：辅助证据
 }
 
@@ -94,7 +95,17 @@ def independence_of(event: LearningEvent) -> float:
 
 
 def measurement_kind(event: LearningEvent) -> str:
-    """该证据测量的是哪一层能力。"""
+    """该证据测量的是哪一层能力。
+
+    社区证据（community_contribution）的测量层级由 payload
+    显式声明（如 knowledge_transfer → transfer），其余事件按类型映射。
+    """
+    if event.event_type == "community_contribution":
+        declared = event.payload.get("measurement_kind")
+        if declared in ("immediate", "independent", "oral", "delayed",
+                        "transfer"):
+            return declared
+        return "immediate"
     return MEASUREMENT_KIND_BY_EVENT_TYPE.get(event.event_type, "immediate")
 
 

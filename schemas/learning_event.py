@@ -31,6 +31,8 @@ EVENT_TYPES = frozenset({
     # Phase 1.6：纵向保持类事件
     "delayed_test_completed",
     "transfer_test_completed",
+    # Phase 1.7：社区证据事件（经授权与复核的社区能力证据）
+    "community_contribution",
 })
 
 # 带有分数证据、可用于掌握度估计的事件类型
@@ -43,6 +45,7 @@ SCORED_EVENT_TYPES = frozenset({
     "oral_verification_completed",
     "delayed_test_completed",
     "transfer_test_completed",
+    "community_contribution",
 })
 
 # 学生主动申报的 AI 辅助程度（payload.assistance）。
