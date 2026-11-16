@@ -97,7 +97,7 @@ class PlannerAgent(BaseAgent):
         # 第三步：按规则拼装 Markdown 一周计划表（离线保底，保证一定有表格）
         表格 = self._生成计划表(每日信息, 运动们, 薄弱学科)
         输出 = f"{思路}\n\n{表格}"
-        return {"output": 输出, "tool_calls": 调用记录}
+        return {"output": 输出, "tool_calls": 调用记录, "planner_mode": "weekly_heuristic"}
 
     # ------------------------------------------------------------------
     # 内部辅助
