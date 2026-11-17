@@ -13,6 +13,7 @@ from __future__ import annotations
 from datetime import date, timedelta
 
 from .base_agent import BaseAgent
+from .scheduler_adapter import run_exam_plan
 
 # 周一~周日的中文标签，用于表格展示
 星期标签 = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
@@ -53,6 +54,28 @@ class PlannerAgent(BaseAgent):
                 }
             )
 
+
+        # ExamOS 模式：仅当用户明确提供结构化 exam_plan 时启用确定性排程。
+        # 日历/天气工具调用仍保留；daily_hours 必须由上游按真实约束显式提供。
+        exam_plan = user_profile.get("exam_plan")
+        if exam_plan is not None:
+            scheduler_result = run_exam_plan(exam_plan)
+            explanation = self.llm.chat(
+                "你是学习规划解释助手。只能解释给定的确定性排程结果；"
+                "不得修改课程分配、时间、任务优先级或风险数值。"
+                "若结果未提供的信息，明确说明无法判断。",
+                scheduler_result["report"],
+            )
+            output = scheduler_result["report"]
+            if explanation.strip():
+                output += "\n\n### 排程说明（LLM，仅作解释）\n" + explanation.strip()
+            return {
+                "output": output,
+                "tool_calls": 调用记录,
+                "planner_mode": "examos_scheduler",
+                "scheduler_result": scheduler_result["data"],
+            }
+
         # 第二步：请 LLM 给出排课思路（MockLLM 会引用运动/周三等信息）
         system = (
             "你是一位学习规划师，请结合一周日历、天气与学生运动习惯，"
@@ -74,7 +97,7 @@ class PlannerAgent(BaseAgent):
         # 第三步：按规则拼装 Markdown 一周计划表（离线保底，保证一定有表格）
         表格 = self._生成计划表(每日信息, 运动们, 薄弱学科)
         输出 = f"{思路}\n\n{表格}"
-        return {"output": 输出, "tool_calls": 调用记录}
+        return {"output": 输出, "tool_calls": 调用记录, "planner_mode": "weekly_heuristic"}
 
     # ------------------------------------------------------------------
     # 内部辅助
