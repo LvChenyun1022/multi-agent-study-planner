@@ -111,6 +111,52 @@ class TestPlannerAgentSchedulerIntegration(unittest.TestCase):
                 }
             })
 
+    def test_replan_from_later_start_day_keeps_day_before_exam(self):
+        """回归：start_day=1 时，考前一天（绝对 Day 2 = exam_day-1）必须仍可排课。
+
+        坐标系契约：exam_day 为相对规划原点 day 0 的绝对日序号；
+        allocate 用绝对坐标，risk_scores 的 D 用剩余天数视图。
+        旧实现把 exam_day 原地平移后再交给 allocate，导致 start_day>0 时
+        考试前一天被错误封锁（本例中 Day 2 会完全排空）。
+        """
+        plan = {
+            "start_day": 1,
+            "daily_hours": {"1": 2.0, "2": 2.0},
+            "courses": [
+                {
+                    "name": "信号与系统", "exam_day": 3, "credits": 4,
+                    "degree": True, "priority": 0.67, "n_diag": 10,
+                    "a": 0.8, "b": 0.2, "min_hours": 0.0,
+                    "knowledge": [{"name": "傅里叶", "weight": 1.0, "mastery": 0.5}],
+                    "tasks": [
+                        {"name": "傅里叶变换专题", "kp": "傅里叶", "hours": 4.0,
+                         "required": True, "deps": []},
+                    ],
+                },
+            ],
+            "execution_feedback": {
+                "day": 1, "completion": {"信号与系统": 0.5}, "default_rate": 1.0,
+            },
+        }
+        result = self.agent.run({"user_profile": {"exam_plan": plan}})
+        data = result["scheduler_result"]
+        self.assertEqual(data["mode"], "v2")
+        self.assertTrue(data["conservation_ok"])
+
+        # D 因子按剩余天数计：v1 起点 Day 1 剩 2 天，v2 起点 Day 2 剩 1 天。
+        self.assertAlmostEqual(data["risk_scores_initial"]["信号与系统"]["D"], 0.8)
+        self.assertAlmostEqual(data["risk_scores_final"]["信号与系统"]["D"], 0.9)
+
+        # 4h 必修：Day 1 计划 2h、完成 50%（done=1h），Day 2 退回 2h；
+        # v2 起点 Day 2 预算 2h，应排满考前一天，剩余 1h 构成风险敞口。
+        day2_hours = sum(
+            row["hours"] for row in data["schedule_final"] if row["day"] == 2
+        )
+        self.assertAlmostEqual(day2_hours, 2.0)
+        state = data["task_state"][0]
+        self.assertAlmostEqual(state["done_hours"], 1.0)
+        self.assertAlmostEqual(state["remaining_hours"], 1.0)
+
 
 if __name__ == "__main__":
     unittest.main()

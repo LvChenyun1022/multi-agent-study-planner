@@ -104,6 +104,31 @@ AI 检测只能作为触发信号，不能直接降低掌握度。
 明确不做（留 C1–C3 阶段）：论坛前端、信息流、LLM 分析 Agent、
 知识挑战推荐、Discourse 部署。
 
+## ProgressMonitorAgent（进度监控 Agent）
+
+- `agents/progress_monitor_agent.py`：四类重规划触发器——
+  T1 完成率偏差（单日显著低于计划 / 连续两日低迷）、
+  T2 掌握度变化（新测验证据）、T3 约束变化（daily_hours 改变）、
+  T4 安全线（临考且必修剩余比例过高）；
+- 显著性阈值 + 24 小时冷却（仅拦 completion 类信号，
+  manual_request 与约束变化不冷却），避免频繁抖动重规划；
+- 输出 execution_feedback 直接适配 `run_exam_plan()` 的 v2 入口；
+- 16 项新测试（`tests/test_progress_monitor.py`）。
+
+## 排程引擎坐标系修复
+
+修复 `agents/scheduler_adapter.py` v2 重规划路径的 exam_day
+坐标系混用：旧实现把 `course.exam_day` 原地平移（减已流逝天数）后
+再交给 `allocate`，而 `allocate` 以绝对日序号判定可排窗口，
+`start_day > 0` 时会错误封掉考试前一天。
+
+修复方案：Course 上的 exam_day 恒为绝对日序号，不再原地改写；
+新增 `_risk_view()` 构造"剩余天数视图"副本仅供 `risk_scores`
+的 D 因子使用（v1 以 start_day 为基准，v2 以 next_day 为基准）。
+`scheduler.py` 本体与初赛冻结 demo 输出均未改动
+（已与 `chusai-demo-baseline` 逐字比对一致）；新增回归测试
+`test_replan_from_later_start_day_keeps_day_before_exam` 锁定该场景。
+
 ## 六引擎现状
 
 | 引擎 | 状态 |
@@ -117,9 +142,10 @@ AI 检测只能作为触发信号，不能直接降低掌握度。
 
 ## 测试结果
 
-`python -m unittest discover` → 115/115 通过
+`python -m unittest discover` → 132/132 通过
 （22 项 1.0 遗留 + Phase 1 新增 32 项 + Phase 1.5/1.6 新增 25 项
-+ Phase 1.7 新增 15 项 + 考试分析 Agent 新增 21 项）。
++ Phase 1.7 新增 15 项 + 考试分析 Agent 新增 21 项
++ 进度监控 Agent 新增 16 项 + 坐标系回归 1 项）。
 
 ## 明确的边界（未实现）
 

@@ -4,6 +4,13 @@
 输入由 PlannerAgent 从 user_profile["exam_plan"] 读取。
 daily_hours 表示扣除课程、运动、日历事件后的净可用学习时间；
 算法只使用这一确定性预算，不会自行猜测学生空闲时间。
+
+坐标系契约：spec 中的 exam_day 与 daily_hours 的日期键均为
+相对规划原点 day 0 的绝对日序号。scheduler.allocate 使用绝对坐标
+（day >= exam_day 起不可再排该课）；scheduler.risk_scores 的 D 因子
+需要"距考试剩余天数"，因此每次评分前用 _risk_view 换算为相对视图，
+绝不在 Course 上原地改写 exam_day——否则 v2 重规划会把
+"剩余天数"误当"绝对日序号"，错误封掉考试前一天（start_day>0 时）。
 """
 from __future__ import annotations
 
@@ -169,6 +176,32 @@ def _parse_daily_hours(raw: Any) -> dict[int, float]:
     return result
 
 
+def _risk_view(courses: list[Course], base_day: int) -> list[Course]:
+    """构造风险评分视图：exam_day 换算为相对 base_day 的剩余天数。
+
+    allocate 始终使用绝对日序号；risk_scores 的 D = urgency(剩余天数)。
+    视图副本与原件共享 tasks 等可变对象，但 risk_scores 只读取
+    exam_day / credits / degree / priority / n_diag / knowledge，
+    不会触碰任务状态，因此共享是安全的。
+    """
+    return [
+        Course(
+            name=course.name,
+            exam_day=max(0, course.exam_day - base_day),
+            credits=course.credits,
+            degree=course.degree,
+            priority=course.priority,
+            n_diag=course.n_diag,
+            a=course.a,
+            b=course.b,
+            min_hours=course.min_hours,
+            knowledge=course.knowledge,
+            tasks=course.tasks,
+        )
+        for course in courses
+    ]
+
+
 def _schedule_rows(schedule: dict, courses: list[Course]) -> list[dict]:
     task_lookup = {
         (course.name, task.name): task
@@ -269,7 +302,8 @@ def run_exam_plan(spec: Any) -> dict:
     if sum(weights) <= 0:
         raise SchedulerInputError("risk_weights 至少有一个权重必须大于 0")
 
-    risks_v1 = risk_scores(courses, weights=weights)
+    # D 因子使用"距考试剩余天数"视图；allocate 使用绝对日序号。
+    risks_v1 = risk_scores(_risk_view(courses, start_day), weights=weights)
     schedule_v1, allocated_v1, warnings_v1, _ = allocate(
         courses, daily_hours, risks_v1, start_day=start_day
     )
@@ -341,12 +375,10 @@ def run_exam_plan(spec: Any) -> dict:
         rollback_future(courses, schedule_v1, start_day=next_day)
         feedback_bad = conservation_check(courses, schedule_v1)
 
-        # 考试日按已流逝天数平移；掌握缺口 M 不因单纯未完成计划而变化。
-        elapsed_days = feedback_day - start_day + 1
-        for course in courses:
-            course.exam_day = max(0, course.exam_day - elapsed_days)
-
-        final_risks = risk_scores(courses, weights=weights)
+        # 不原地改写 course.exam_day：allocate 需要绝对日序号，
+        # 仅 risk_scores 的 D 因子换算为相对 next_day 的剩余天数视图；
+        # 掌握缺口 M 不因单纯未完成计划而变化。
+        final_risks = risk_scores(_risk_view(courses, next_day), weights=weights)
         final_schedule, final_allocated, final_warnings, _ = allocate(
             courses, daily_hours, final_risks, start_day=next_day
         )
