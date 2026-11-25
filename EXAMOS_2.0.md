@@ -20,6 +20,7 @@
 | `services/` | LearningEventService（记录/纠正/有效视图）、StudentService（档案、选课、画像重建） |
 | `intelligence/student/` | mastery_estimator（证据加权掌握度）、profile_builder（画像组装） |
 | `intelligence/decision/` | exam_plan_bridge（画像 → run_exam_plan 标准输入） |
+| `agents/exam_analysis_agent.py` | 考试分析 Agent：考试范围文本（LLM 抽取）或结构化输入 → CourseSpec，校验与排程入口同源 |
 | `tests/` | 32 项新测试（事件溯源 12、建模引擎 13、端到端切片 7） |
 | `demo_slice.py` | 一键演示 `python demo_slice.py` |
 
@@ -116,13 +117,15 @@ AI 检测只能作为触发信号，不能直接降低掌握度。
 
 ## 测试结果
 
-`python -m unittest discover` → 94/94 通过
+`python -m unittest discover` → 115/115 通过
 （22 项 1.0 遗留 + Phase 1 新增 32 项 + Phase 1.5/1.6 新增 25 项
-+ Phase 1.7 新增 15 项）。
++ Phase 1.7 新增 15 项 + 考试分析 Agent 新增 21 项）。
 
 ## 明确的边界（未实现）
 
-- 未实现从日历/诊断 Agent 自动构建 exam_plan（沿自 1.0 集成报告的边界）；
+- 考试分析 Agent 已实现课程侧建档（scope_text → CourseSpec，LLM 抽取
+  全部经同源校验）；仍未实现从日历自动推导 daily_hours（净可用时间
+  须由上游按真实约束显式提供）；
 - 未实现 Course Intelligence（文档解析/OCR/知识图谱，属 Phase 2）；
 - 未实现社区前端与 LLM 社区分析 Agent（C1–C3 阶段）；
 - 未实现 Level 1（学期级）与 Level 3（即时）决策；
