@@ -3,6 +3,7 @@ from .base_agent import BaseAgent, LLMClient, MockLLM
 from .diagnose_agent import DiagnoseAgent
 from .exam_analysis_agent import ExamAnalysisAgent, ExamAnalysisError
 from .planner_agent import PlannerAgent
+from .progress_monitor_agent import ProgressMonitorAgent, ProgressMonitorError
 from .tutor_agent import TutorAgent
 
 __all__ = [
@@ -13,5 +14,7 @@ __all__ = [
     "ExamAnalysisAgent",
     "ExamAnalysisError",
     "PlannerAgent",
+    "ProgressMonitorAgent",
+    "ProgressMonitorError",
     "TutorAgent",
 ]
