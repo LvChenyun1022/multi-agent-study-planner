@@ -37,7 +37,7 @@ import urllib.request
 from agents.base_agent import MockLLM
 
 # 默认超时（秒）与重试次数
-_TIMEOUT = 60
+_TIMEOUT = 180  # 致远一号在 prompt 较长时响应可能超过 60s，放宽到 180s
 _MAX_RETRIES = 1  # 首次失败后再重试 1 次，共最多 2 次请求
 
 
