@@ -129,6 +129,34 @@ AI 检测只能作为触发信号，不能直接降低掌握度。
 （已与 `chusai-demo-baseline` 逐字比对一致）；新增回归测试
 `test_replan_from_later_start_day_keeps_day_before_exam` 锁定该场景。
 
+## 前端五页面重构（决赛交付形态）
+
+新增 Streamlit 多页应用（旧 `app.py` 保留为 legacy 三 Agent 演示）：
+
+| 页面 | 职责 |
+| --- | --- |
+| `examos_app.py` | 今日仪表盘：今日任务、风险评分、预警、最近反馈 |
+| `pages/1_课程与考试.py` | 课程建档：结构化录入 / scope_text 经 LLM 解析（【待确认】后入库），保存一律走 CourseSpec 同源校验 |
+| `pages/2_复习计划.py` | 每日时间预算维护、生成/约束变化/手动重排、版本历史与 v1/v2 差异 |
+| `pages/3_执行反馈.py` | 按日打卡 → 进度监控判定 → 显著偏差触发重规划；执行日推进 |
+| `pages/4_诊断与画像.py` | 诊断 Agent（RAG）、掌握度自评与 n_diag 维护（改动作为重规划信号） |
+
+关键工程决策：
+
+- `examos_state.py` 状态层：JSON 持久化 + 多日推进编排。
+  **触发重规划不走 run_exam_plan 的单轮反馈入口**，而是直接编排
+  scheduler 原语（apply_day_completion → rollback_future → allocate），
+  使执行反馈作用在学生当天实际看到的计划块上；未触发时只做
+  done/remaining 簿记，未来计划不变（显著性闸门的意义所在）。
+- 总量守恒不变量 `total = done + remaining + 当前计划已分配`
+  在每次状态变更后复核，9 项状态层测试覆盖（含坐标系契约、
+  按课程冷却、手动请求绕过冷却）。
+- LLM 调用全部带加载态与延迟提示；MockLLM 下 scope_text 解析
+  诚实报错而非静默降级。
+- 冒烟测试 `smoke_pages.py`（AppTest 无头渲染 5 页 × 空/含数据
+  两种状态，状态文件重定向到临时目录）。
+- 依赖固定 `streamlit>=1.67,<2`（`width="stretch"` 新参数）。
+
 ## 六引擎现状
 
 | 引擎 | 状态 |
@@ -142,10 +170,10 @@ AI 检测只能作为触发信号，不能直接降低掌握度。
 
 ## 测试结果
 
-`python -m unittest discover` → 132/132 通过
+`python -m unittest discover` → 141/141 通过
 （22 项 1.0 遗留 + Phase 1 新增 32 项 + Phase 1.5/1.6 新增 25 项
 + Phase 1.7 新增 15 项 + 考试分析 Agent 新增 21 项
-+ 进度监控 Agent 新增 16 项 + 坐标系回归 1 项）。
++ 进度监控 Agent 新增 16 项 + 坐标系回归 1 项 + 前端状态层 9 项）。
 
 ## 明确的边界（未实现）
 

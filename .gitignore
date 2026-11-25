@@ -25,3 +25,7 @@ context_store_web.json
 .DS_Store
 Thumbs.db
 *.log
+
+# ExamOS frontend runtime state
+examos_data.json
+examos_data.json.tmp
